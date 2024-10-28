@@ -2,33 +2,17 @@
 
 <%-
   session_dir = session.staged_root
-  tutorial_dir = session.staged_root.join('ParallelR')
 
-  match = /^app_rstudio_server\/(.+)$|.+ R\/(.+)/.match(context.version)
-  r_version = match[1] unless match[1].nil?
-  r_version = match[2] unless match[2].nil?
-
-  module_dir = context.cluster == 'owens' ? '/usr' : '/apps'
-  all_modules = if r_version >= '4.2' && ['owens', 'pitzer', 'kubernetes', 'kubernetes-test', 'kubernetes-dev'].include?(context.cluster)
-                  "gnu/11.2.0 mkl/2021.3.0 #{context.version}"
-                else
-                  context.version
-                end
+  all_modules = context.version
 %>
 
 # Load the required environment
 setup_env () {
   module purge
-
-  module load xalt/latest project/ondemand
-  <%- if context.cluster !~ /kubernetes|ascend|cardinal/ -%>
-  module load rstudio_launcher/centos7
-  <%- end -%>
   module load <%= all_modules %>
 }
 
 setup_env
-
 
 export WORKING_DIR="<%= session_dir %>"
 
@@ -69,48 +53,42 @@ EOL
 )
 chmod 700 "$WORKING_DIR/rsession.sh"
 
+# Generate a database.conf file
+export DBCONF="$WORKING_DIR/database.conf"
+(
+umask 077
+sed 's/^ \{2\}//' > "${DBCONF}" << EOL
+  # set database location
+  provider=sqlite
+  directory=/tmp/${USER}/${SLURM_JOB_ID}/rstudio-server/db
+EOL
+)
+chmod 700 "${DBCONF}"
+
 # Set working directory to home directory
 cd "${HOME}"
+
+# server log directory in this job's working directory
+mkdir -p "$WORKING_DIR/logs"
+
+# create unique tmp dir
+TMPDIR="$(mktemp -d)"
 
 # Output debug info
 module list
 hostname
 
-# server log directory in this job's working directory
-mkdir -p "$WORKING_DIR/logs"
-
-# use the system installed rserver
-export PATH="$PATH:/usr/lib/rstudio-server/bin"
-
 set -x
 # Launch the RStudio Server
 echo "Starting up rserver... at $(date)"
 
-<%- if context.cluster !~ /kubernetes/ -%>
-bwrap --dev-bind / / --tmpfs /tmp \
- --bind $WORKING_DIR/etc /etc/rstudio \
- --setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \
-  rserver \
+rserver \
  --www-port "${port}" \
  --auth-none 0 \
  --auth-pam-helper-path "${RSTUDIO_AUTH}" \
  --auth-encrypt-password 0 \
  --rsession-path "${RSESSION_WRAPPER_FILE}" \
- <%- if r_version > '4.1' -%>
- --server-data-dir='/tmp/run' \
+ --server-data-dir=$TMPDIR'/run' \
+ --secure-cookie-key-file "${TMPDIR}/rstudio-server/secure-cookie-key" \
+ --database-config-file "${DBCONF}" \
  --server-user=$(whoami)
- <%- end -%>
-
-<%- else -%>
-cd ${APPTAINER_HOME:=$HOME}
-rserver \
-  --www-port 8080 \
-  --auth-none 0 \
-  --auth-pam-helper-path "${RSTUDIO_AUTH}" \
-  --auth-encrypt-password 0 \
-  --rsession-path "${RSESSION_WRAPPER_FILE}" \
-  <%- if r_version > '4.1' -%>
-  --server-data-dir='/tmp/run' \
-  --server-user=$(whoami)
-  <%- end -%>
-<%- end -%>
