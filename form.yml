@@ -7,6 +7,7 @@ form:
   - num_cpus
   - num_gpus
   - version
+  - custom_element
 attributes:
   custom_queue:
     widget: "select"
@@ -54,8 +55,49 @@ attributes:
   version:
     widget: select
     label: "R version"
-    help: "This defines the version of R you want to load."
+    help: |
+       - This defines the version of R you want to load
     options:
       - [
           "4.4.0", "gcc/12.2.0 R/4.4.0 rstudio-server/2024.09.0-375"
         ]
+  custom_element:
+    class: "d-none"
+    skip_label: true
+    help: |
+      <div class="card">
+        <div class="card-header">
+          Note
+        </div>
+        <div class="card-body">
+        RStudio will use the same R environment under your user account setup through the terminal. 
+        Packages installed through RStudio will be availbe in the terminal and vica-versa (including submissions with <span class="bg-light text-black">sbatch</span>).
+        If you need help with that setup, click below.
+        </div>
+      </div>
+
+      <button class="btn btn-dark mt-3" type="button" data-toggle="collapse" data-target="#env_setup" aria-expanded="false" aria-controls="collapseExample">
+        How to setup your R environment
+      </button>
+
+      <dl class="collapse" id="env_setup">
+        <dt>Execute the follwing command in a terminal after logging into ARCC2:</dt>
+        <dd>
+          <ul style="list-style-type:none;">
+            <li><span class="bg-light text-black">mkdir -p $HOME/.R && echo R_LIBS_USER="$HOME/.R" >> $HOME/.Renviron</span></li>
+          </ul>
+        </dd>
+
+        <dt>This one-liner command is only need once and does the following:</dt>
+        <dd>
+          <ul>
+            <li>creates a hidden directory in your home folder called <span class="bg-light text-black">.R</span></li>
+            <li>creates a hidden environment file for R called <span class="bg-light text-black">.Renviron</span></li>
+            <li>creates the environment variable <span class="bg-light text-black">R_LIBS_USER</span> in that file,
+            so R will use that path (the new hidden directory <span class="bg-light text-black">.R</span>) as the location to install packages</li>
+          </ul>
+
+          The <span class="bg-light text-black">.Renviron</span> file is read when R loads. 
+          See <a href="https://rstats.wtf/r-startup.html">this guide</a>  for an explanation of R's startup process.
+        </dd>
+      </dl>
