@@ -71,7 +71,7 @@ attributes:
         </div>
         <div class="card-body">
         RStudio will use the same R environment under your user account setup through the terminal. 
-        Packages installed through RStudio will be availbe in the terminal and vica-versa (including submissions with <span class="bg-light text-black">sbatch</span>).
+        Packages installed through RStudio will be availabe in the terminal and vice-versa (including submissions with <span class="bg-light text-black">sbatch</span>).
         If you need help with that setup, click below.
         </div>
       </div>
