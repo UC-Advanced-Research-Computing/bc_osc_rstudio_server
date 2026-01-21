@@ -1,6 +1,7 @@
 ---
 cluster: "arcc2"
 form:
+  - auto_accounts
   - custom_queue
   - bc_num_hours
   - bc_num_slots
