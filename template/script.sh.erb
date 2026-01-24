@@ -87,6 +87,7 @@ rserver \
  --auth-none 0 \
  --auth-pam-helper-path "${RSTUDIO_AUTH}" \
  --auth-encrypt-password 0 \
+ --rsession-config-file "${WORKING_DIR}/etc/rsession.conf" \
  --rsession-path "${RSESSION_WRAPPER_FILE}" \
  --server-data-dir=$TMPDIR'/run' \
  --secure-cookie-key-file "${TMPDIR}/rstudio-server/secure-cookie-key" \
