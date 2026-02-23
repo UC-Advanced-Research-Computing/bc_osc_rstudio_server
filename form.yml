@@ -66,9 +66,8 @@ attributes:
     help: |
        - This defines the version of R you want to load
     options:
-      - [
-          "4.4.0", "gcc/12.2.0 R/4.4.0 rstudio-server/2024.09.0-375"
-        ]
+      - [ "4.4.0", "gcc/12.2.0 R/4.4.0 rstudio-server/2024.09.0-375" ]
+      - [ "4.5.2", "gcc/12.2.0 R/4.5.2 rstudio-server/2026.01.0-392" ]
   custom_element:
     class: "d-none"
     skip_label: true
